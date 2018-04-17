@@ -1,60 +1,58 @@
 # IIFE FOR PRIVACY
-do ->
-# CONSTRUCTOR
-  this.vanillaSlider = (options) ->
-    this.options             = options
-    this.slider              = document.querySelector('.' + this.options.sliderClass)
-    this.slide               = document.querySelectorAll('.' + this.options.slideClass)
-    this.sliderWrapper       = document.querySelector('.' + this.options.sliderClass + ' .wrapper')
-    this.syncedSlider        = document.querySelectorAll('.' + this.options.syncedSliderClass)
-    this.syncedSlide         = document.querySelectorAll('.' + this.options.syncedSlideClass)
-    this.syncedSliderWrapper = document.querySelector('.' + this.options.syncedSliderClass + ' .wrapper')
-    this.sliderNavItem       = document.querySelectorAll('.' + this.options.sliderNavItemClass)
-    this.moveLeftButton      = document.querySelectorAll('.' + this.options.leftButtonClass)
-    this.moveRightButton     = document.querySelectorAll('.' + this.options.rightButtonClass)
-    this.firstSlide          = document.querySelectorAll('.' + this.options.slideClass)[0]
-    this.slidesToShow        = this.options.slidesToShow
-    this.slidesToScroll      = this.options.slidesToScroll
-    this.slideWidth          = this.firstSlide.clientWidth
-    this.slideHeight         = this.firstSlide.clientHeight
-    this.sliderWidth         = this.slider.clientWidth
-    this.screenWidth         = window.innerWidth
-    this.numOfSlides         = document.querySelectorAll('.' + this.options.slideClass).length
-    this.sliderNavItemArray  = [...(this.sliderNavItem)]
-    this.autoplayInterval    = ''
-    this.margin              = ->
-      calcMargin = window.getComputedStyle(this.firstSlide).getPropertyValue('margin-right')
-      calcMargin = parseInt(calcMargin.replace('px', ''))
-      calcMargin = calcMargin * 2
-      return calcMargin
-    this.scrollDistance      = ->
-      (this.margin() + this.slideWidth) * this.slidesToScroll
-    this.zeroCounter         = 0
-    this.slideCounter        = this.slidesToShow
-    this.distanceScrolled    = (this.margin() + this.slideWidth) * this.slidesToScroll
-    if this.slidesToShow > 1
-      this.slider.style.width = (this.margin() + this.slideWidth) * this.slidesToShow + 'px'
+vanillaSlider = (options) ->
+  this.options             = options
+  this.slider              = document.querySelector('.' + this.options.sliderClass)
+  this.slide               = document.querySelectorAll('.' + this.options.slideClass)
+  this.sliderWrapper       = document.querySelector('.' + this.options.sliderClass + ' .wrapper')
+  this.syncedSlider        = document.querySelectorAll('.' + this.options.syncedSliderClass)
+  this.syncedSlide         = document.querySelectorAll('.' + this.options.syncedSlideClass)
+  this.syncedSliderWrapper = document.querySelector('.' + this.options.syncedSliderClass + ' .wrapper')
+  this.sliderNavItem       = document.querySelectorAll('.' + this.options.sliderNavItemClass)
+  this.moveLeftButton      = document.querySelectorAll('.' + this.options.leftButtonClass)
+  this.moveRightButton     = document.querySelectorAll('.' + this.options.rightButtonClass)
+  this.firstSlide          = document.querySelectorAll('.' + this.options.slideClass)[0]
+  this.slidesToShow        = this.options.slidesToShow
+  this.slidesToScroll      = this.options.slidesToScroll
+  this.slideWidth          = this.firstSlide.clientWidth
+  this.slideHeight         = this.firstSlide.clientHeight
+  this.sliderWidth         = this.slider.clientWidth
+  this.screenWidth         = window.innerWidth
+  this.numOfSlides         = document.querySelectorAll('.' + this.options.slideClass).length
+  this.sliderNavItemArray  = [...(this.sliderNavItem)]
+  this.autoplayInterval    = ''
+  this.margin              = ->
+    calcMargin = window.getComputedStyle(this.firstSlide).getPropertyValue('margin-right')
+    calcMargin = parseInt(calcMargin.replace('px', ''))
+    calcMargin = calcMargin * 2
+    return calcMargin
+  this.scrollDistance      = ->
+    (this.margin() + this.slideWidth) * this.slidesToScroll
+  this.zeroCounter         = 0
+  this.slideCounter        = this.slidesToShow
+  this.distanceScrolled    = (this.margin() + this.slideWidth) * this.slidesToScroll
+  if this.slidesToShow > 1
+    this.slider.style.width = (this.margin() + this.slideWidth) * this.slidesToShow + 'px'
 
-    # SET DEFAULT OPTIONS
-    if !this.options.hasOwnProperty 'slidesToShow'
-      this.options.slidesToShow = 1
-    if !this.options.hasOwnProperty 'slidesToScroll'
-      this.options.slidesToScroll = 1
+  # SET DEFAULT OPTIONS
+  if !this.options.hasOwnProperty 'slidesToShow'
+    this.options.slidesToShow = 1
+  if !this.options.hasOwnProperty 'slidesToScroll'
+    this.options.slidesToScroll = 1
 
-    if this.slidesToShow == 1
-      this.slideCounter = 0
+  if this.slidesToShow == 1
+    this.slideCounter = 0
 
-    # INITIALIZE NECESSARY MODULES
-    this.onResize()
-    if this.options.hasOwnProperty('leftButtonClass') and this.options.hasOwnProperty('rightButtonClass')
-      this.leftClick()
-      this.rightClick()
-    if this.options.hasOwnProperty('sliderNavItemClass')
-      this.onNavItemClick()
-    if this.options.hasOwnProperty('responsive')
-      this.responsive()
-    if this.options.autoplay != false
-      this.autoplay(true)
+  # INITIALIZE NECESSARY MODULES
+  this.onResize()
+  if this.options.hasOwnProperty('leftButtonClass') and this.options.hasOwnProperty('rightButtonClass')
+    this.leftClick()
+    this.rightClick()
+  if this.options.hasOwnProperty('sliderNavItemClass')
+    this.onNavItemClick()
+  if this.options.hasOwnProperty('responsive')
+    this.responsive()
+  if this.options.autoplay != false
+    this.autoplay(true)
 
   # METHODS
   vanillaSlider.prototype.autoplay = (status) ->
