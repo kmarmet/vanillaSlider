@@ -1,4 +1,3 @@
-// IIFE FOR PRIVACY
 function vanillaSlider(options) {
    let slider              = document.querySelector('.' + options.sliderClass);
    let slide               = document.querySelectorAll('.' + options.slideClass);
@@ -30,6 +29,18 @@ function vanillaSlider(options) {
    let zeroCounter         = 0;
    let slideCounter        = slidesToShow;
    let distanceScrolled    = (margin() + slideWidth) * slidesToScroll;
+   let end                 = function() {
+      if (slidesToShow === 1) {
+         if (zeroCounter === (numOfSlides - 1)) {
+            return true;
+         }
+      }
+      else {
+         if (zeroCounter === slidesToShow / slidesToScroll) {
+            return true;
+         }
+      }
+   };
    if (slidesToShow > 1) {
       slider.style.width = (margin() + slideWidth) * slidesToShow + 'px';
    }
@@ -45,7 +56,7 @@ function vanillaSlider(options) {
       slideCounter = 0;
    }
 
-   // INITIALIZE NECESSARY MODULES
+   // RUN NECESSARY FUNCTIONS
    onResize();
    if (options.hasOwnProperty('leftButtonClass') && options.hasOwnProperty('rightButtonClass')) {
       leftClick();
@@ -64,7 +75,7 @@ function vanillaSlider(options) {
    function autoplay(status) {
       if (status === true) {
          autoplayInterval = setInterval((() => {
-            moveRight();
+            moveSlide('right');
          }), 3000);
       }
       else {
@@ -80,22 +91,19 @@ function vanillaSlider(options) {
    }
 
    function scroll(direction, distance) {
-      if (zeroCounter < 2) {
-         distanceScrolled = (slideWidth + margin()) * slidesToShow;
-      }
       if (direction === 'left') {
          prefixedStyle(sliderWrapper, 'Transform', `translateX(${distance}px)`);
          if (options.hasOwnProperty('syncedSlideClass')) {
             prefixedStyle(syncedSliderWrapper, 'Transform', `translateX(${distance}px)`);
          }
-         distanceScrolled -= distance;
+         zeroCounter <= 0 ? distanceScrolled = (slideWidth + margin()) * slidesToShow : distanceScrolled -= distance;
       }
       else {
          prefixedStyle(sliderWrapper, 'Transform', `translateX(${-distance}px)`);
          if (options.hasOwnProperty('syncedSlideClass')) {
             prefixedStyle(syncedSliderWrapper, 'Transform', `translateX(${-distance}px)`);
          }
-         distanceScrolled += distance;
+         zeroCounter <= 0 ? distanceScrolled = (slideWidth + margin()) * slidesToShow : distanceScrolled += distance;
       }
    }
 
@@ -110,9 +118,8 @@ function vanillaSlider(options) {
 
          document.querySelectorAll('.' + options.sliderNavItemClass)[0].classList.add('active');
       }
-      slideCounter     = 0;
-      zeroCounter      = 0;
-      distanceScrolled = 0;
+      slideCounter = 0;
+      zeroCounter  = 0;
    }
 
    function onResize() {
@@ -146,27 +153,36 @@ function vanillaSlider(options) {
       });
    }
 
-   function advanceSlide() {
-      if (options.hasOwnProperty('sliderNavItemClass')) {
-         document.querySelectorAll('.' + options.sliderNavItemClass)[slideCounter].classList.add('active');
-         if (slideCounter > 0) {
-            document.querySelectorAll('.' + options.sliderNavItemClass)[slideCounter - 1].classList.remove('active');
-         }
-      }
-      scroll('right', scrollDistance());
-   }
-
-   function moveRight() {
+   function moveSlide(direction) {
       if (options.hasOwnProperty('onSlideChange')) {
          options.onSlideChange();
       }
-      slideCounter++;
-      zeroCounter++;
-      if (distanceScrolled >= numOfSlides * slideWidth) {
+      if (end() === true) {
          startOver();
       }
       else {
-         advanceSlide();
+         if (direction === 'left') {
+            scroll('left', scrollDistance());
+            zeroCounter--;
+            slideCounter--;
+         }
+         else {
+            scroll('right', scrollDistance());
+            zeroCounter++;
+            slideCounter++;
+         }
+         if (options.hasOwnProperty('slidesToScroll')) {
+            if (slidesToShow === 1 && slidesToScroll === 1) {
+               if (options.hasOwnProperty('sliderNavItemClass')) {
+                  sliderNavItemArray.forEach(function(navItem, index) {
+                     navItem.classList.remove('active');
+                     if (index === slideCounter) {
+                        navItem.classList.add('active');
+                     }
+                  });
+               }
+            }
+         }
       }
    }
 
@@ -177,7 +193,7 @@ function vanillaSlider(options) {
             setTimeout((function() {
                button.disabled = false;
             }), 700);
-            moveRight();
+            moveSlide('right');
          };
       });
    }
@@ -185,29 +201,12 @@ function vanillaSlider(options) {
    function leftClick() {
       moveLeftButton.forEach(function(button) {
          button.onclick = () => {
+            button.disabled = true;
+            setTimeout((() => {
+               button.disabled = false;
+            }), 700);
             if (zeroCounter > 0) {
-               button.disabled = true;
-               setTimeout((() => {
-                  button.disabled = false;
-               }), 700);
-               if (options.hasOwnProperty('onSlideChange')) {
-                  options.onSlideChange();
-               }
-               if (distanceScrolled > 0) {
-                  slideCounter--;
-                  if (options.hasOwnProperty('slidesToScroll')) {
-                     scroll('left', scrollDistance());
-                     if (slidesToShow === 1 && slidesToScroll === 1) {
-                        if (options.hasOwnProperty('sliderNavItemClass')) {
-                           document.querySelectorAll('.' + options.sliderNavItemClass)[slideCounter].classList.add('active');
-                           document.querySelectorAll('.' + options.sliderNavItemClass)[slideCounter + 1].classList.remove('active');
-                        }
-                     }
-                  }
-                  else {
-                     scroll('left', scrollDistance());
-                  }
-               }
+               moveSlide('left');
             }
          };
       });
@@ -225,7 +224,7 @@ function vanillaSlider(options) {
             zeroCounter                              = slideNumber;
             sliderNavItemArray.forEach(function(item, index) {
                slideNumber === index ? sliderNavItemArray[index].classList.add('active') : sliderNavItemArray[index].classList.remove('active');
-            })
+            });
          };
       });
    }
