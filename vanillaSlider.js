@@ -1,20 +1,23 @@
 function vanillaSlider(options) {
+   // Main slider
    let slider              = document.querySelector('.' + options.sliderClass);
-   let slide               = document.querySelectorAll('.' + options.slideClass);
    let sliderWrapper       = document.querySelector('.' + options.sliderClass + ' .wrapper');
-   let syncedSlider        = document.querySelectorAll('.' + options.syncedSliderClass);
-   let syncedSlide         = document.querySelectorAll('.' + options.syncedSlideClass);
-   let syncedSliderWrapper = document.querySelector('.' + options.syncedSliderClass + ' .wrapper');
-   let sliderNavItem       = document.querySelectorAll('.' + options.sliderNavItemClass);
-   let moveLeftButton      = [...document.querySelectorAll('.' + options.leftButtonClass)];
-   let moveRightButton     = [...document.querySelectorAll('.' + options.rightButtonClass)];
    let firstSlide          = document.querySelectorAll('.' + options.slideClass)[0];
-   let slidesToShow        = options.slidesToShow;
-   let slidesToScroll      = options.slidesToScroll;
    let slideWidth          = firstSlide.clientWidth;
-   let numOfSlides         = [...document.querySelectorAll('.' + options.slideClass)].length;
-   let sliderNavItemArray  = [...document.querySelectorAll('.' + options.sliderNavItemClass)];
-   let autoplayInterval    = function() {
+   // Synced Slider
+   let syncedFirstSlide    = document.querySelectorAll('.' + options.syncedSlideClass)[0] || '';
+   let syncedSliderWrapper = document.querySelector('.' + options.syncedSliderClass + ' .wrapper') || '';
+   let slidesToShow        = options.slidesToShow || 1;
+   let slidesToScroll      = options.slidesToScroll || 1;
+   let syncedSlideWidth    = syncedFirstSlide.clientWidth;
+   // Helpers variables
+   let numOfSlides         = [].slice.call(document.querySelectorAll('.' + options.slideClass)).length;
+   let sliderNavItemArray  = [].slice.call(document.querySelectorAll('.' + options.sliderNavItemClass));
+   // Buttons/Arrows
+   let moveLeftButton      = [].slice.call(document.querySelectorAll('.' + options.leftButtonClass));
+   let moveRightButton     = [].slice.call(document.querySelectorAll('.' + options.rightButtonClass));
+   // Helper functions
+   let autoPlayInterval    = function() {
    };
    let margin              = function() {
       let calcMargin;
@@ -23,12 +26,10 @@ function vanillaSlider(options) {
       calcMargin = calcMargin * 2;
       return calcMargin;
    };
-   let scrollDistance      = function() {
-      return (margin() + slideWidth) * slidesToScroll;
-   };
+   // Counters
    let zeroCounter         = 0;
    let slideCounter        = slidesToShow;
-   let distanceScrolled    = (margin() + slideWidth) * slidesToScroll;
+   // Determine when slider has reached the end
    let end                 = function() {
       if (slidesToShow === 1) {
          if (zeroCounter === (numOfSlides - 1)) {
@@ -41,45 +42,29 @@ function vanillaSlider(options) {
          }
       }
    };
-   if (slidesToShow > 1) {
-      slider.style.width = (margin() + slideWidth) * slidesToShow + 'px';
-   }
 
-   // SET DEFAULTS
-   if (!options.hasOwnProperty('slidesToShow')) {
-      options.slidesToShow = 1;
-   }
-   if (!options.hasOwnProperty('slidesToScroll')) {
-      options.slidesToScroll = 1;
-   }
-   if (slidesToShow === 1) {
-      slideCounter = 0;
-   }
+   // Set slider width for sliders with more than one slide
+   if (slidesToShow > 1) slider.style.width = (margin() + slideWidth) * slidesToShow + 'px';
+   if (slidesToShow === 1) slideCounter = 0;
 
-   // RUN NECESSARY FUNCTIONS
+   // Run Necessary Functions On Load
    onResize();
    if (options.hasOwnProperty('leftButtonClass') && options.hasOwnProperty('rightButtonClass')) {
       leftClick();
       rightClick();
    }
-   if (options.hasOwnProperty('sliderNavItemClass')) {
-      onNavItemClick();
-   }
-   if (options.hasOwnProperty('responsive')) {
-      responsive();
-   }
-   if (options.autoplay !== false) {
-      autoplay(true);
-   }
+   if (options.hasOwnProperty('sliderNavItemClass')) onNavItemClick();
+   if (options.hasOwnProperty('responsive')) responsive();
+   if (options.autoPlay !== false) autoPlay(true);
 
-   function autoplay(status) {
+   function autoPlay(status) {
       if (status === true) {
-         autoplayInterval = setInterval((() => {
+         autoPlayInterval = setInterval((() => {
             moveSlide('right');
          }), 3000);
       }
       else {
-         clearInterval(autoplayInterval);
+         clearInterval(autoPlayInterval);
       }
    }
 
@@ -90,27 +75,28 @@ function vanillaSlider(options) {
       element.style['o' + property] += value;
    }
 
-   function scroll(direction, distance) {
+   function scroll(direction) {
       if (direction === 'left') {
-         prefixedStyle(sliderWrapper, 'Transform', `translateX(${distance}px)`);
-         if (options.hasOwnProperty('syncedSlideClass')) {
-            prefixedStyle(syncedSliderWrapper, 'Transform', `translateX(${distance}px)`);
-         }
-         zeroCounter <= 0 ? distanceScrolled = (slideWidth + margin()) * slidesToShow : distanceScrolled -= distance;
+         prefixedStyle(sliderWrapper, 'Transform', `translateX(${(margin() + slideWidth) * slidesToScroll}px)`);
+         if (options.hasOwnProperty('syncedSlideClass')) prefixedStyle(syncedSliderWrapper, 'Transform', `translateX(${(margin() + syncedSlideWidth) * slidesToScroll}px)`);
       }
       else {
-         prefixedStyle(sliderWrapper, 'Transform', `translateX(${-distance}px)`);
-         if (options.hasOwnProperty('syncedSlideClass')) {
-            prefixedStyle(syncedSliderWrapper, 'Transform', `translateX(${-distance}px)`);
-         }
-         zeroCounter <= 0 ? distanceScrolled = (slideWidth + margin()) * slidesToShow : distanceScrolled += distance;
+         prefixedStyle(sliderWrapper, 'Transform', `translateX(${-(margin() + slideWidth) * slidesToScroll}px)`);
+         if (options.hasOwnProperty('syncedSlideClass')) prefixedStyle(syncedSliderWrapper, 'Transform', `translateX(${-(margin() + syncedSlideWidth) * slidesToScroll}px)`);
       }
    }
 
    function startOver() {
+      slideWidth                               = firstSlide.clientWidth;
       sliderWrapper.style.transform            = 'translateX(0)';
       sliderWrapper.style['-webkit-transform'] = 'translateX(0)';
       sliderWrapper.style['-ms-transform']     = 'translateX(0)';
+      if (options.hasOwnProperty('syncedSlideClass')) {
+         syncedSlideWidth                               = syncedFirstSlide.clientWidth;
+         syncedSliderWrapper.style.transform            = 'translateX(0)';
+         syncedSliderWrapper.style['-webkit-transform'] = 'translateX(0)';
+         syncedSliderWrapper.style['-ms-transform']     = 'translateX(0)';
+      }
       if (options.hasOwnProperty('sliderNavItemClass')) {
          sliderNavItemArray.forEach(function(navItem) {
             navItem.classList.remove('active');
@@ -128,6 +114,11 @@ function vanillaSlider(options) {
       const whenDone = () => {
          if (options.hasOwnProperty('responsive')) {
             responsive();
+         }
+         else {
+            if (window.innerWidth > 768) {
+               startOver();
+            }
          }
       };
       window.addEventListener('resize', function() {
@@ -162,12 +153,12 @@ function vanillaSlider(options) {
       }
       else {
          if (direction === 'left') {
-            scroll('left', scrollDistance());
+            scroll('left');
             zeroCounter--;
             slideCounter--;
          }
          else {
-            scroll('right', scrollDistance());
+            scroll('right');
             zeroCounter++;
             slideCounter++;
          }
@@ -215,8 +206,13 @@ function vanillaSlider(options) {
    function onNavItemClick() {
       sliderNavItemArray.forEach(function(navItem, index) {
          navItem.onclick = function(event) {
-            autoplay(false);
-            let slideNumber                          = sliderNavItemArray.indexOf(event.currentTarget);
+            autoPlay(false);
+            let slideNumber = sliderNavItemArray.indexOf(event.currentTarget);
+            if (options.hasOwnProperty('syncedSlideClass')) {
+               syncedSliderWrapper.style.transform            = 'translateX(' + slideNumber * -syncedSlideWidth + 'px)';
+               syncedSliderWrapper.style['-webkit-transform'] = 'translateX(' + slideNumber * -syncedSlideWidth + 'px)';
+               syncedSliderWrapper.style['-ms-transform']     = 'translateX(' + slideNumber * -syncedSlideWidth + 'px)';
+            }
             sliderWrapper.style.transform            = 'translateX(' + slideNumber * -slideWidth + 'px)';
             sliderWrapper.style['-webkit-transform'] = 'translateX(' + slideNumber * -slideWidth + 'px)';
             sliderWrapper.style['-ms-transform']     = 'translateX(' + slideNumber * -slideWidth + 'px)';
