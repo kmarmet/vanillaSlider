@@ -1,18 +1,21 @@
 function vanillaSlider(options) {
+   // Slider options
+   let speed               = options.speed || 3000;
    // Main slider
    let slider              = document.querySelector('.' + options.sliderClass);
+   let slide               = [].slice.call(document.querySelectorAll('.' + options.slideClass));
    let sliderWrapper       = document.querySelector('.' + options.sliderClass + ' .wrapper');
    let firstSlide          = document.querySelectorAll('.' + options.slideClass)[0];
    let slideWidth          = firstSlide.clientWidth;
    // Synced Slider
    let syncedFirstSlide    = document.querySelectorAll('.' + options.syncedSlideClass)[0] || '';
    let syncedSliderWrapper = document.querySelector('.' + options.syncedSliderClass + ' .wrapper') || '';
-   let slidesToShow        = options.slidesToShow || 1;
-   let slidesToScroll      = options.slidesToScroll || 1;
    let syncedSlideWidth    = syncedFirstSlide.clientWidth;
    // Helpers variables
    let numOfSlides         = [].slice.call(document.querySelectorAll('.' + options.slideClass)).length;
    let sliderNavItemArray  = [].slice.call(document.querySelectorAll('.' + options.sliderNavItemClass));
+   let slidesToShow        = options.slidesToShow || 1;
+   let slidesToScroll      = options.slidesToScroll || 1;
    // Buttons/Arrows
    let moveLeftButton      = [].slice.call(document.querySelectorAll('.' + options.leftButtonClass));
    let moveRightButton     = [].slice.call(document.querySelectorAll('.' + options.rightButtonClass));
@@ -49,19 +52,22 @@ function vanillaSlider(options) {
 
    // Run Necessary Functions On Load
    onResize();
-   if (options.hasOwnProperty('leftButtonClass') && options.hasOwnProperty('rightButtonClass')) {
-      leftClick();
-      rightClick();
-   }
+   if (options.hasOwnProperty('leftButtonClass')) leftClick();
+   if (options.hasOwnProperty('rightButtonClass')) rightClick();
    if (options.hasOwnProperty('sliderNavItemClass')) onNavItemClick();
    if (options.hasOwnProperty('responsive')) responsive();
    if (options.autoPlay !== false) autoPlay(true);
+   if (options.fade !== false) styleCurrentSlide(zeroCounter);
+   if (options.showTransition !== false) {
+      prefixedStyle(sliderWrapper, 'Transition', 'all .5s ease-in-out');
+      if (options.hasOwnProperty('syncedSlideClass')) prefixedStyle(syncedSliderWrapper, 'Transform', 'transition: all .5s ease-in-out');
+   }
 
    function autoPlay(status) {
       if (status === true) {
          autoPlayInterval = setInterval((() => {
             moveSlide('right');
-         }), 3000);
+         }), speed);
       }
       else {
          clearInterval(autoPlayInterval);
@@ -106,6 +112,7 @@ function vanillaSlider(options) {
       }
       slideCounter = 0;
       zeroCounter  = 0;
+      styleCurrentSlide(zeroCounter);
    }
 
    function onResize() {
@@ -116,9 +123,7 @@ function vanillaSlider(options) {
             responsive();
          }
          else {
-            if (window.innerWidth > 768) {
-               startOver();
-            }
+            startOver();
          }
       };
       window.addEventListener('resize', function() {
@@ -162,18 +167,20 @@ function vanillaSlider(options) {
             zeroCounter++;
             slideCounter++;
          }
-         if (options.hasOwnProperty('slidesToScroll')) {
-            if (slidesToShow === 1 && slidesToScroll === 1) {
-               if (options.hasOwnProperty('sliderNavItemClass')) {
-                  sliderNavItemArray.forEach(function(navItem, index) {
-                     navItem.classList.remove('active');
-                     if (index === slideCounter) {
-                        navItem.classList.add('active');
-                     }
-                  });
-               }
+         if (slidesToShow === 1 && slidesToScroll === 1) {
+            if (options.hasOwnProperty('sliderNavItemClass')) {
+               sliderNavItemArray.forEach(function(navItem, index) {
+                  navItem.classList.remove('active');
+                  if (index === slideCounter) {
+                     navItem.classList.add('active');
+                  }
+               });
             }
          }
+         if (options.fade !== false) {
+            styleCurrentSlide(zeroCounter);
+         }
+
       }
    }
 
@@ -203,6 +210,15 @@ function vanillaSlider(options) {
       });
    }
 
+   function styleCurrentSlide(index) {
+      slide.filter(function(current) {
+         return current !== document.querySelectorAll('.' + options.slideClass)[index];
+      }).map(function(slide) {
+         slide.style.opacity = '0';
+      });
+      document.querySelectorAll('.' + options.slideClass)[index].style.opacity = '1';
+   }
+
    function onNavItemClick() {
       sliderNavItemArray.forEach(function(navItem, index) {
          navItem.onclick = function(event) {
@@ -221,6 +237,9 @@ function vanillaSlider(options) {
             sliderNavItemArray.forEach(function(item, index) {
                slideNumber === index ? sliderNavItemArray[index].classList.add('active') : sliderNavItemArray[index].classList.remove('active');
             });
+            if (options.fade !== false) {
+               styleCurrentSlide(slideNumber);
+            }
          };
       });
    }
