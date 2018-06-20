@@ -9,6 +9,7 @@ function vanillaSlider(options) {
 
    function whenLive() {
       let speed         = options.speed || 3000;
+      let fade          = options.fade || false;
       // Main slider
       let slider        = document.querySelector('.' + options.sliderClass);
       let slide         = [].slice.call(document.querySelectorAll('.' + options.slideClass));
@@ -22,18 +23,18 @@ function vanillaSlider(options) {
       let syncedSlideWidth    = syncedFirstSlide.clientWidth;
 
       // Helpers/default variables
-      let numOfSlides         = [].slice.call(document.querySelectorAll('.' + options.slideClass)).length;
-      let sliderNavItemArray  = [].slice.call(document.querySelectorAll('.' + options.sliderNavItemClass));
-      let slidesToShow        = options.slidesToShow || 1;
-      let slidesToScroll      = options.slidesToScroll || 1;
+      let numOfSlides        = [].slice.call(document.querySelectorAll('.' + options.slideClass)).length;
+      let sliderNavItemArray = [].slice.call(document.querySelectorAll('.' + options.sliderNavItemClass));
+      let slidesToShow       = options.slidesToShow || 1;
+      let slidesToScroll     = options.slidesToScroll || 1;
 
       // Buttons/Arrows
-      let moveLeftButton      = [].slice.call(document.querySelectorAll('.' + options.leftButtonClass));
-      let moveRightButton     = [].slice.call(document.querySelectorAll('.' + options.rightButtonClass));
+      let moveLeftButton   = [].slice.call(document.querySelectorAll('.' + options.leftButtonClass));
+      let moveRightButton  = [].slice.call(document.querySelectorAll('.' + options.rightButtonClass));
       // Helper functions
-      let autoPlayInterval    = function() {
+      let autoPlayInterval = function() {
       };
-      let margin              = function(isSynced) {
+      let margin           = function(isSynced) {
          let totalMargin, marginLeft, marginRight, slideType;
          if (isSynced === undefined) isSynced = false;
          isSynced === false ? slideType = firstSlide : slideType = syncedFirstSlide;
@@ -43,8 +44,8 @@ function vanillaSlider(options) {
          return totalMargin;
       };
       // Counters
-      let zeroCounter         = 0;
-      let slideCounter        = 0;
+      let zeroCounter      = 0;
+      let slideCounter     = 0;
       slidesToShow === 1 ? slideCounter = 0 : slideCounter = slidesToShow;
 
       // Determine when slider has reached the end
@@ -81,7 +82,7 @@ function vanillaSlider(options) {
       if (options.hasOwnProperty('sliderNavItemClass')) onNavItemClick();
       if (options.hasOwnProperty('responsive')) responsive();
       if (options.autoPlay !== false) autoPlay(true);
-      if (options.fade === true && slidesToShow === 1) styleCurrentSlide(zeroCounter);
+      if (fade === true && slidesToShow === 1) styleCurrentSlide(zeroCounter);
       if (options.showTransition !== false) {
          prefixedStyle(sliderWrapper, 'Transition', 'all .5s ease-in-out');
          if (options.hasOwnProperty('syncedSlideClass')) prefixedStyle(syncedSliderWrapper, 'Transform', 'transition: all .5s ease-in-out');
@@ -136,7 +137,7 @@ function vanillaSlider(options) {
          }
          slideCounter = 0;
          zeroCounter  = 0;
-         if (options.fade === true && slidesToShow === 1) {
+         if (fade === true && slidesToShow === 1) {
             styleCurrentSlide(zeroCounter);
          }
       }
@@ -152,7 +153,7 @@ function vanillaSlider(options) {
             else {
                startOver();
             }
-            slider.style.height = firstSlide.clientHeight + 'px';
+            if (options.hasOwnProperty('variableHeight')) slider.style.height = firstSlide.clientHeight + 'px';
          };
          window.addEventListener('resize', function() {
             clearTimeout(delay);
@@ -210,11 +211,11 @@ function vanillaSlider(options) {
                   });
                }
             }
-            if (options.fade === true && slidesToShow === 1) {
+            if (fade === true && slidesToShow === 1) {
                styleCurrentSlide(zeroCounter);
             }
          }
-         slider.style.height = document.querySelectorAll('.' + options.slideClass)[zeroCounter].clientHeight + 'px';
+         if (options.hasOwnProperty('variableHeight')) slider.style.height = document.querySelectorAll('.' + options.slideClass)[zeroCounter].clientHeight + 'px';
       }
 
       function rightClick() {
@@ -265,7 +266,9 @@ function vanillaSlider(options) {
                   syncedSliderWrapper.style['-webkit-transform'] = 'translate3d(' + slideNumber * (-syncedSlideWidth - margin(true)) + 'px, 0,0)';
                   syncedSliderWrapper.style['-ms-transform']     = 'translate3d(' + slideNumber * (-syncedSlideWidth - margin(true)) + 'px, 0,0)';
                }
-               slider.style.height                      = document.querySelectorAll('.' + options.slideClass)[slideNumber].clientHeight + 'px, 0,0';
+               if (options.hasOwnProperty('variableHeight')) {
+                  slider.style.height = document.querySelectorAll('.' + options.slideClass)[slideNumber].clientHeight + 'px, 0,0';
+               }
                sliderWrapper.style.transform            = 'translate3d(' + slideNumber * (-slideWidth - margin(false)) + 'px, 0,0)';
                sliderWrapper.style['-webkit-transform'] = 'translate3d(' + slideNumber * (-slideWidth - margin(false)) + 'px, 0,0)';
                sliderWrapper.style['-ms-transform']     = 'translate3d(' + slideNumber * (-slideWidth - margin(false)) + 'px, 0,0)';
@@ -274,7 +277,7 @@ function vanillaSlider(options) {
                sliderNavItemArray.forEach(function(item, index) {
                   slideNumber === index ? sliderNavItemArray[index].classList.add('active') : sliderNavItemArray[index].classList.remove('active');
                });
-               if (options.fade === true && slidesToShow === 1) {
+               if (fade === true && slidesToShow === 1) {
                   styleCurrentSlide(slideNumber);
                }
             });
